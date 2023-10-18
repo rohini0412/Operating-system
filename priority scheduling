@@ -1,0 +1,76 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <climits> // For INT_MAX
+
+using namespace std;
+
+struct Process {
+    int pid;
+    int arrivalTime;
+    int burstTime;
+    int priority;
+    int completionTime;
+    int turnaroundTime;
+    int waitingTime;
+    int remainingTime;
+
+    // Constructor to initialize remainingTime
+    Process(int p, int a, int b, int pr) : pid(p), arrivalTime(a), burstTime(b), priority(pr), remainingTime(b) {}
+};
+
+bool compareByArrival(const Process &a, const Process &b) {
+    return a.arrivalTime < b.arrivalTime;
+}
+
+int main() {
+    int n = 5; // number of processes
+    vector<Process> proc;
+
+    // Initialize the processes
+    proc.push_back(Process(1, 0, 11, 2));
+    proc.push_back(Process(2, 5, 28, 0));
+    proc.push_back(Process(3, 12, 2, 3));
+    proc.push_back(Process(4, 2, 10, 1));
+    proc.push_back(Process(5, 9, 16, 4));
+
+    sort(proc.begin(), proc.end(), compareByArrival);
+    int currentTime = 0;
+    int completeProcesses = 0;
+
+    cout << "Scheduling:" << endl;
+    cout << "PID\tArrival Time\tBurst Time\tCompletion Time\tTurnaround Time\tWaiting Time" << endl;
+
+    while (completeProcesses < n) {
+        int highestPriority = INT_MAX;
+        int selectedProcess = -1;
+
+        for (int i = 0; i < n; ++i) {
+            if (proc[i].arrivalTime <= currentTime && proc[i].remainingTime > 0 && proc[i].priority < highestPriority) {
+                highestPriority = proc[i].priority;
+                selectedProcess = i;
+            }
+        }
+
+        if (selectedProcess == -1) {
+            currentTime++;
+            continue;
+        }
+
+        proc[selectedProcess].remainingTime--;
+        currentTime++;
+
+        if (proc[selectedProcess].remainingTime == 0) {
+            proc[selectedProcess].completionTime = currentTime;
+            proc[selectedProcess].turnaroundTime = proc[selectedProcess].completionTime - proc[selectedProcess].arrivalTime;
+            proc[selectedProcess].waitingTime = proc[selectedProcess].turnaroundTime - proc[selectedProcess].burstTime;
+            completeProcesses++;
+        }
+    }
+
+    for (int i = 0; i < n; i++) {
+        cout << proc[i].pid << "\t" << proc[i].arrivalTime << "\t\t" << proc[i].burstTime << "\t\t" << proc[i].completionTime << "\t\t" << proc[i].turnaroundTime << "\t\t" << proc[i].waitingTime << endl;
+    }
+
+    return 0;
+}
