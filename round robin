@@ -1,0 +1,71 @@
+
+#include <iostream>
+using namespace std;
+
+struct Process {
+  int id;
+  int arrivalTime;
+  int burstTime;
+  int completionTime;
+  int turnaroundTime;
+  int waitingTime;
+};
+
+void calculateTimes(Process processes[], int n, int quantum) {
+  int remainingTime[n];
+  for (int i = 0; i < n; i++) {
+    remainingTime[i] = processes[i].burstTime;
+  }
+  int currentTime = 0;
+  bool allDone = false;
+  while (!allDone) {
+    allDone = true;
+    for (int i = 0; i < n; i++) {
+      if (remainingTime[i] > 0) {
+        allDone = false;
+        if (remainingTime[i] > quantum) {
+          currentTime = currentTime + quantum;
+          remainingTime[i] = remainingTime[i] - quantum;
+        } else {
+          currentTime = currentTime + remainingTime[i];
+          processes[i].completionTime = currentTime;
+          remainingTime[i] = 0;
+        }
+      }
+    }
+  }
+}
+
+void calculateTurnaroundTime(Process processes[], int n) {
+  for (int i = 0; i < n; i++)
+    processes[i].turnaroundTime =
+        processes[i].completionTime - processes[i].arrivalTime;
+}
+
+void calculateWaitingTime(Process processes[], int n) {
+  for (int i = 0; i < n; i++)
+    processes[i].waitingTime =
+        processes[i].turnaroundTime - processes[i].burstTime;
+}
+
+void printTable(Process processes[], int n) {
+  cout << "Process\tArrivalTime\tBurstTime\tCompletionTime\tTurnaroundTime\tWaitingTime" << endl;
+  for (int i = 0; i < n; i++) {
+    cout << processes[i].id << "\t\t" << processes[i].arrivalTime << "\t\t" << processes[i].burstTime << "\t\t" << processes[i].completionTime << "\t\t" << processes[i].turnaroundTime << "\t\t" << processes[i].waitingTime << endl;
+  }
+  cout << endl;
+}
+
+int main() {
+  int n = 5, quantum = 2;
+
+  Process processes[5] = {{1, 0, 5}, {2, 1, 3}, {3, 2, 2}, {4, 3, 4}, {5, 4, 1}};
+
+  calculateTimes(processes, n, quantum);
+  calculateTurnaroundTime(processes, n);
+  calculateWaitingTime(processes, n);
+
+  cout << "\nRound Robin Scheduling Results:\n";
+  printTable(processes, n);
+
+  return 0;}
